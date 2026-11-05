@@ -1,0 +1,73 @@
+# Marker panel and control definitions.
+#
+# This is the ONE file to edit when the Excel sheets arrive. Everything
+# downstream (ingest, thresholds, Monte Carlo) reads the panel from here, so
+# nothing in src/ needs touching to swap in the real markers.
+#
+# direction:
+#   "up"   marker INCREASES with senescence (p16, p21, SA-beta-gal, gamma-H2AX)
+#   "down" marker DECREASES with senescence (LMNB1, Ki67, HMGB1)
+#
+# The direction matters more than it looks. A "down" marker's senescent call is
+# the LOWER tail, so the threshold is computed from the opposite percentile of
+# the negative control. Getting this backwards silently inverts a marker and
+# still produces plausible-looking numbers.
+
+measurement:
+  # One of: per_cell | per_well
+  #   per_cell  single-cell intensities, one row per nucleus. Threshold work is
+  #             fully available.
+  #   per_well  pre-summarized means per well. Threshold sweeps over single-cell
+  #             cutoffs are NOT meaningful; only experiment 3 (power) applies.
+  level: per_cell
+  modality: immunofluorescence   # immunofluorescence | flow | qpcr | other
+  intensity_column_suffix: _intensity
+  # Log-transform intensities before thresholding. IF intensities are
+  # right-skewed and roughly log-normal; thresholds set on the raw scale are
+  # dominated by the bright tail.
+  log_transform: true
+  log_pseudocount: 1.0
+
+markers:
+  - name: p16
+    column: p16_intensity
+    direction: up
+    canonical: true
+  - name: p21
+    column: p21_intensity
+    direction: up
+    canonical: true
+  - name: LMNB1
+    column: LMNB1_intensity
+    direction: down
+    canonical: true
+  - name: SA_bgal
+    column: SA_bgal_intensity
+    direction: up
+    canonical: true
+  - name: Ki67
+    column: Ki67_intensity
+    direction: down
+    canonical: false
+
+# Morphology covariates. Not senescence calls on their own, but nuclear and
+# cell area track the senescent state and are worth carrying through.
+covariates:
+  - nuclear_area
+  - cell_area
+
+controls:
+  # Values as they appear in the `condition` column of the sheets.
+  negative:
+    - untreated
+  positive:
+    - etoposide
+  # Conditions that are neither control, i.e. the actual experiment.
+  # Leave empty to treat every non-control condition as a test condition.
+  test: []
+
+grouping:
+  condition_column: condition
+  replicate_column: replicate      # biological replicate / mouse / donor
+  batch_column: plate              # plate or imaging session, for batch effects
+  cell_id_column: cell_id

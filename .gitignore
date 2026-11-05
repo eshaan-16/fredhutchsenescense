@@ -1,0 +1,39 @@
+# Raw data never enters version control.
+#
+# The sheets come from human-derived material in a clinical research setting.
+# Even de-identified marker intensities belong in the lab's own storage with
+# its own access controls, not in a git history that is impossible to truly
+# purge once pushed. Keep data/raw/ local, document provenance in the README.
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Generated outputs. Reproducible from code plus data, so not worth versioning.
+results/*
+!results/.gitkeep
+!results/figures/.gitkeep
+
+*.xlsx
+*.xls
+*.csv
+*.tsv
+!tests/**/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.env
+
+# Notebooks: strip outputs before committing
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
